@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: radiocalico
       POSTGRES_USER: radiocalico_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -21,6 +21,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1GB
+          cpus: '1.0'
+        reservations:
+          memory: 256MB
+          cpus: '0.25'
     command: >
       postgres 
       -c shared_preload_libraries=pg_stat_statements
@@ -45,7 +53,7 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: radiocalico
       POSTGRES_USER: radiocalico_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PORT: 3000
     depends_on:
       postgres:
@@ -53,6 +61,14 @@ services:
     networks:
       - radiocalico-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512MB
+          cpus: '0.5'
+        reservations:
+          memory: 128MB
+          cpus: '0.1'
     healthcheck:
       test: ["CMD", "node", "-e", "const http = require('http'); const options = { host: 'localhost', port: 3000, path: '/health', timeout: 2000 }; const req = http.request(options, (res) => process.exit(res.statusCode === 200 ? 0 : 1)); req.on('error', () => process.exit(1)); req.end();"]
       interval: 30s
@@ -76,6 +92,14 @@ services:
     networks:
       - radiocalico-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256MB
+          cpus: '0.25'
+        reservations:
+          memory: 64MB
+          cpus: '0.05'
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
@@ -101,13 +125,21 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: radiocalico
       POSTGRES_USER: radiocalico_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SQLITE_DB_PATH: /app/data/database.db
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - radiocalico-network
+    deploy:
+      resources:
+        limits:
+          memory: 256MB
+          cpus: '0.25'
+        reservations:
+          memory: 64MB
+          cpus: '0.1'
     command: ["node", "database/migrate.js"]
     restart: "no"
     volumes:

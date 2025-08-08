@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const net = require('net');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,6 +23,32 @@ const dbConfig = {
 };
 
 const pool = new Pool(dbConfig);
+
+// Utility function to validate and parse IP address
+function parseAndValidateIP(req) {
+  // Get IP from various sources
+  let rawIP = req.ip || 
+              req.connection?.remoteAddress || 
+              req.socket?.remoteAddress ||
+              req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+              req.headers['x-real-ip'];
+  
+  if (!rawIP) {
+    return null;
+  }
+  
+  // Clean IPv6 mapped IPv4 addresses (::ffff:192.168.1.1 -> 192.168.1.1)
+  if (rawIP.startsWith('::ffff:')) {
+    rawIP = rawIP.substring(7);
+  }
+  
+  // Validate IP address format
+  if (net.isIP(rawIP)) {
+    return rawIP;
+  }
+  
+  return null;
+}
 
 // Initialize database tables if they don't exist
 async function initializeDatabase() {
@@ -133,7 +160,7 @@ app.delete('/users/:id', async (req, res) => {
 // Song rating endpoints
 app.post('/ratings', async (req, res) => {
   const { songId, rating, userFingerprint } = req.body;
-  const userIp = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || null;
+  const userIp = parseAndValidateIP(req);
   
   if (!songId || !rating || (rating !== 1 && rating !== -1) || !userFingerprint) {
     return res.status(400).json({ error: 'Valid songId, rating (1 or -1), and userFingerprint are required' });
