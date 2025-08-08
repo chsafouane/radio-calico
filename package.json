@@ -1,19 +1,37 @@
 {
   "name": "radiocalico",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Live radio streaming web application with song rating functionality",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:backend": "jest --selectProjects=\"Backend Tests\"",
+    "test:frontend": "jest --selectProjects=\"Frontend Unit Tests\" --selectProjects=\"Frontend Integration Tests\"",
+    "test:unit": "jest --selectProjects=\"Frontend Unit Tests\"",
+    "test:integration": "jest tests/frontend/integration",
+    "test:e2e": "jest tests/frontend/e2e",
+    "test:verbose": "cross-env TEST_VERBOSE=true jest --verbose"
   },
-  "keywords": [],
+  "keywords": ["radio", "streaming", "hls", "ratings", "web-audio"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "supertest": "^6.3.4",
+    "cross-env": "^7.0.3",
+    "@testing-library/dom": "^9.3.4",
+    "@testing-library/jest-dom": "^6.4.2",
+    "puppeteer": "^21.11.0",
+    "nock": "^13.5.1"
   }
 }
