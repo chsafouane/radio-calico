@@ -206,8 +206,8 @@ echo -e "${BLUE}📁 File Permission Security${NC}"
 echo "--------------------------------"
 
 ((TOTAL_CHECKS++))
-# Check for overly permissive files
-RISKY_FILES=$(find . -type f -perm +o+w 2>/dev/null | grep -v node_modules | head -10)
+# Check for overly permissive files (using POSIX compliant syntax)
+RISKY_FILES=$(find . -type f -perm /o+w 2>/dev/null | grep -v node_modules | head -10)
 if [ -z "$RISKY_FILES" ]; then
     print_status "No world-writable files found"
 else

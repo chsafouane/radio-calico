@@ -5,6 +5,19 @@
 
 set -e
 
+# Cleanup function for trapped signals
+cleanup() {
+    if [ -n "$TEMP_CONTAINER_ID" ] && docker ps -a --format "{{.ID}}" | grep -q "$TEMP_CONTAINER_ID"; then
+        echo "Cleaning up temporary container: $TEMP_CONTAINER_ID" >&2
+        docker rm -f "$TEMP_CONTAINER_ID" >/dev/null 2>&1 || true
+    fi
+    exit $1
+}
+
+# Set up trap for cleanup on script exit
+trap 'cleanup $?' EXIT
+trap 'cleanup 1' INT TERM
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -78,9 +91,22 @@ scan_image() {
     if docker scout --help &>/dev/null 2>&1; then
         print_info "Running Docker Scout vulnerability scan..."
         if docker scout cves "$IMAGE" --format sarif --output "/tmp/scout-$IMAGE.sarif" 2>/dev/null; then
-            VULNERABILITIES=$(cat "/tmp/scout-$IMAGE.sarif" 2>/dev/null | jq -r '.runs[0].results | length' 2>/dev/null || echo "0")
-            if [ "$VULNERABILITIES" -eq 0 ]; then
+            # Check if jq is available for parsing
+            if check_command jq; then
+                VULNERABILITIES=$(cat "/tmp/scout-$IMAGE.sarif" 2>/dev/null | jq -r '.runs[0].results | length' 2>/dev/null || echo "0")
+            else
+                # Fallback without jq - just check if file has content
+                if [ -s "/tmp/scout-$IMAGE.sarif" ]; then
+                    VULNERABILITIES="unknown"
+                    print_warning "jq not available - cannot parse vulnerability count"
+                else
+                    VULNERABILITIES="0"
+                fi
+            fi
+            if [ "$VULNERABILITIES" = "0" ]; then
                 print_status "No vulnerabilities found by Docker Scout"
+            elif [ "$VULNERABILITIES" = "unknown" ]; then
+                print_warning "Docker Scout scan completed - check output manually"
             else
                 print_warning "Found $VULNERABILITIES vulnerabilities"
             fi
@@ -127,6 +153,8 @@ scan_image() {
     # Create temporary container to inspect filesystem
     CONTAINER_ID=$(docker create "$IMAGE" 2>/dev/null || echo "")
     if [ -n "$CONTAINER_ID" ]; then
+        # Store container ID for cleanup
+        TEMP_CONTAINER_ID="$CONTAINER_ID"
         # Check for common sensitive files
         SENSITIVE_FILES=$(docker exec "$CONTAINER_ID" find / -name "*.key" -o -name "*.pem" -o -name "*password*" -o -name "*secret*" 2>/dev/null | head -10 || echo "")
         if [ -n "$SENSITIVE_FILES" ]; then
@@ -136,8 +164,8 @@ scan_image() {
             print_status "No obvious sensitive files found"
         fi
         
-        # Check file permissions
-        WORLD_WRITABLE=$(docker exec "$CONTAINER_ID" find / -type f -perm +o+w 2>/dev/null | grep -v "/proc\|/dev\|/sys" | head -5 || echo "")
+        # Check file permissions (using POSIX compliant syntax)
+        WORLD_WRITABLE=$(docker exec "$CONTAINER_ID" find / -type f -perm /o+w 2>/dev/null | grep -v "/proc\|/dev\|/sys" | head -5 || echo "")
         if [ -n "$WORLD_WRITABLE" ]; then
             print_warning "World-writable files found:"
             echo "$WORLD_WRITABLE" | sed 's/^/    /'
@@ -145,7 +173,9 @@ scan_image() {
             print_status "No world-writable files found"
         fi
         
-        docker rm "$CONTAINER_ID" >/dev/null 2>&1
+        # Clean up container
+        docker rm "$CONTAINER_ID" >/dev/null 2>&1 || true
+        TEMP_CONTAINER_ID=""
     fi
     
     # 4. Check image size and layers
