@@ -48,6 +48,66 @@ For development with auto-restart:
 npm run dev
 ```
 
+## 🐳 Docker Deployment
+
+RadioCalico includes Docker support for both development and production environments.
+
+### Production Deployment
+
+**Using Docker Compose (Recommended):**
+```bash
+# Build and start the production container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+**Using Docker directly:**
+```bash
+# Build the production image
+docker build -t radiocalico:prod .
+
+# Run the production container
+docker run -d -p 3000:3000 --name radiocalico \
+  -v radiocalico_data:/app/data \
+  radiocalico:prod
+```
+
+### Development with Docker
+
+**Using Docker Compose:**
+```bash
+# Build and start the development container
+docker-compose -f docker-compose.dev.yml up
+
+# For background execution
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+**Using Docker directly:**
+```bash
+# Build the development image
+docker build -f Dockerfile.dev -t radiocalico:dev .
+
+# Run the development container with hot reload
+docker run -p 3000:3000 -p 9229:9229 \
+  -v $(pwd):/app \
+  -v /app/node_modules \
+  radiocalico:dev
+```
+
+### Docker Features
+
+- **Production**: Optimized Alpine Linux image with security hardening
+- **Development**: Full development environment with debugging support
+- **Persistent Data**: Database stored in Docker volumes
+- **Health Checks**: Built-in container health monitoring
+- **Security**: Non-root user execution in production
+
 ## 🏗️ Architecture
 
 ### Backend (Express.js)

@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+coverage
+.git
+.gitignore
+README.md
+.nyc_output
+tests
+jest.config.js
+*.test.js
+.dockerignore
+Dockerfile*
+docker-compose*
+RadioCalicoStyle
+RadioCalicoLayout.png
+TESTING.md
