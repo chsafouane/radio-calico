@@ -1,0 +1,38 @@
+# Security scanning ignore file
+# Files and patterns to ignore during security scans
+
+# Test files with dummy credentials
+test/fixtures/**
+tests/**/*.test.js
+
+# Documentation examples  
+README*.md
+docs/**
+
+# Development environment files (not production)
+.env.example
+.env.development
+
+# Build artifacts
+dist/
+build/
+*.min.js
+
+# Logs and reports
+logs/
+reports/
+*.log
+
+# Node modules (scanned separately)
+node_modules/
+
+# Git metadata
+.git/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Known false positives (document why each is safe)
+# Example: public/vendor/hls.js - third-party library with known safe token patterns
