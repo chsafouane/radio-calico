@@ -1,0 +1,462 @@
+/* RadioCalico Layout - Based on Screenshot Design */
+
+/* CSS Custom Properties - Brand Colors */
+:root {
+    --mint: #D8F2D5;
+    --forest-green: #1F4E23;
+    --teal: #38A29D;
+    --calico-orange: #EFA63C;
+    --charcoal: #231F20;
+    --cream: #F5EADA;
+    --white: #FFFFFF;
+    --dark-header: #4A4A4A;
+    --red-accent: #D64545;
+    
+    /* Typography */
+    --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+body {
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--charcoal);
+    background-color: var(--white);
+    min-height: 100vh;
+}
+
+/* Header - Dark gray with logo and title */
+.site-header {
+    background-color: var(--dark-header);
+    color: var(--white);
+    padding: 20px 0;
+    text-align: center;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+h1 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: 2.2rem;
+    color: var(--white);
+    margin: 0;
+    letter-spacing: 0.1em;
+}
+
+/* Main Content - Two column layout */
+.main-content {
+    background-color: var(--white);
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.now-playing-section {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+/* Left Column - Large Album Art */
+.album-art-container {
+    position: relative;
+}
+
+.album-art-large {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.album-art-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-art-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+
+
+/* Right Column - Track Details */
+.track-details {
+    padding: 20px 0;
+}
+
+.artist-info {
+    margin-bottom: 30px;
+}
+
+.artist-name, .artist-surname {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 3rem;
+    line-height: 0.9;
+    color: var(--charcoal);
+    margin: 0;
+}
+
+.artist-surname {
+    margin-bottom: 0;
+}
+
+.song-info {
+    margin-bottom: 30px;
+}
+
+.song-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.8rem;
+    color: var(--charcoal);
+    margin-bottom: 15px;
+}
+
+.album-info {
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    color: var(--charcoal);
+    font-style: italic;
+}
+
+/* Quality Information */
+.quality-info {
+    margin-bottom: 30px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.8;
+}
+
+.quality-info span {
+    color: var(--charcoal);
+    font-weight: 600;
+}
+
+/* Rating Section */
+.rating-section {
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.rate-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--charcoal);
+}
+
+.rating-btn {
+    background-color: var(--white);
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    color: var(--charcoal);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+}
+
+.rating-btn:hover:not(:disabled) {
+    border-color: var(--teal);
+    background-color: #f9f9f9;
+    transform: translateY(-1px);
+}
+
+.rating-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.rating-btn.active.thumbs-up {
+    background-color: #4CAF50;
+    color: var(--white);
+    border-color: #4CAF50;
+}
+
+.rating-btn.active.thumbs-down {
+    background-color: var(--calico-orange);
+    color: var(--white);
+    border-color: var(--calico-orange);
+}
+
+/* Compact Player Controls */
+.player-controls {
+    margin-top: 30px;
+}
+
+.compact-player {
+    background-color: #2c2c2c;
+    border-radius: 25px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.play-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.time-display {
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    min-width: 80px;
+}
+
+.time-separator {
+    margin: 0 4px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.volume-slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.3);
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--white);
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--white);
+    cursor: pointer;
+    border: none;
+}
+
+/* Previous Tracks Section - Light green background */
+.previous-tracks-section {
+    background-color: var(--mint);
+    padding: 40px 0;
+    margin-top: 40px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.previous-tracks-section h3 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--charcoal);
+    margin-bottom: 20px;
+}
+
+.previous-tracks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recent-track {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--charcoal);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(31, 78, 35, 0.1);
+}
+
+.recent-track:last-child {
+    border-bottom: none;
+}
+
+.recent-track-title {
+    font-weight: 600;
+    color: var(--forest-green);
+}
+
+.recent-track-artist {
+    color: #666;
+}
+
+.loading {
+    text-align: left;
+    color: #666;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+/* Hidden elements */
+.stream-status, .rating-status {
+    display: none !important;
+}
+
+#radioPlayer {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .now-playing-section {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+    }
+    
+    .album-art-large {
+        width: 350px;
+        height: 350px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 20px 15px;
+    }
+    
+    .album-art-large {
+        width: 280px;
+        height: 280px;
+    }
+    
+    .artist-name, .artist-surname {
+        font-size: 2.2rem;
+    }
+    
+    .song-title {
+        font-size: 1.4rem;
+    }
+    
+    .album-info {
+        font-size: 1rem;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .compact-player {
+        max-width: 100%;
+        padding: 12px 20px;
+    }
+    
+    .rating-section {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .album-art-large {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .artist-name, .artist-surname {
+        font-size: 1.8rem;
+    }
+    
+    .song-title {
+        font-size: 1.2rem;
+    }
+    
+    .compact-player {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .volume-control {
+        width: 100%;
+        justify-content: center;
+    }
+}

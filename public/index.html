@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadioCalico - Live Stream</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-content">
+            <img src="RadioCalicoLogoTM.png" alt="RadioCalico" class="logo">
+            <h1>Radio Calico</h1>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="now-playing-section">
+            <div class="album-art-container">
+                <div class="album-art-large">
+                    <img id="albumArt" src="" alt="Album Art" style="display: none;">
+                    <div class="album-art-placeholder">♪</div>
+                </div>
+            </div>
+            
+            <div class="track-details">
+                <div class="artist-info">
+                    <h2 class="artist-name" id="artistName">Shandi</h2>
+                    <h2 class="artist-surname" id="artistSurname">Sinnamon</h2>
+                </div>
+                
+                <div class="song-info">
+                    <h3 class="song-title" id="songTitle">He's A Dream (1983)</h3>
+                    <div class="album-info" id="albumInfo">
+                        Flashdance (Original Motion Picture Soundtrack)
+                    </div>
+                </div>
+                
+                <div class="quality-info">
+                    <div class="source-quality">Source quality: <span id="sourceQuality">16-bit 44.1kHz</span></div>
+                    <div class="stream-quality">Stream quality: <span id="streamQuality">48kHz FLAC / HLS Lossless</span></div>
+                </div>
+                
+                <div class="rating-section">
+                    <span class="rate-text">Rate this track:</span>
+                    <button id="thumbsUp" class="rating-btn thumbs-up" disabled>
+                        👍 <span id="thumbsUpCount">0</span>
+                    </button>
+                    <button id="thumbsDown" class="rating-btn thumbs-down" disabled>
+                        👎 <span id="thumbsDownCount">0</span>
+                    </button>
+                </div>
+                
+                <div class="player-controls">
+                    <audio id="radioPlayer" preload="none">
+                        <p>Your browser doesn't support HTML5 audio.</p>
+                    </audio>
+                    
+                    <div class="compact-player">
+                        <button id="playPauseBtn" class="play-btn">
+                            <span class="play-icon">▶</span>
+                            <span class="pause-icon" style="display: none;">⏸</span>
+                        </button>
+                        <div class="time-display">
+                            <span id="currentTime">0:35</span>
+                            <span class="time-separator">/</span>
+                            <span id="duration">Live</span>
+                        </div>
+                        <div class="volume-control">
+                            <button id="volumeBtn" class="volume-btn">🔊</button>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stream-status" id="status" style="display: none;">Ready to play</div>
+    </main>
+    
+    <section class="previous-tracks-section">
+        <div class="container">
+            <h3>Previous tracks:</h3>
+            <div class="previous-tracks-list" id="recentTracks">
+                <div class="loading">Loading previous tracks...</div>
+            </div>
+        </div>
+    </section>
+    
+    <div class="rating-status" id="ratingStatus" style="display: none;">Loading ratings...</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="script.js"></script>
+</body>
+</html>
