@@ -14,7 +14,10 @@
     "test:unit": "jest --selectProjects=\"Frontend Unit Tests\"",
     "test:integration": "jest tests/frontend/integration",
     "test:e2e": "jest tests/frontend/e2e",
-    "test:verbose": "cross-env TEST_VERBOSE=true jest --verbose"
+    "test:verbose": "cross-env TEST_VERBOSE=true jest --verbose",
+    "start:postgres": "node server-postgres.js",
+    "deploy:production": "./scripts/deploy.sh",
+    "migrate": "node database/migrate.js"
   },
   "keywords": ["radio", "streaming", "hls", "ratings", "web-audio"],
   "author": "",
@@ -22,7 +25,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",

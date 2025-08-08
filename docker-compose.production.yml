@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: radiocalico-postgres
+    environment:
+      POSTGRES_DB: radiocalico
+      POSTGRES_USER: radiocalico_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - radiocalico-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U radiocalico_user -d radiocalico"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres 
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.max=10000
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+
+  # Node.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: app-stage
+    container_name: radiocalico-app
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: radiocalico
+      POSTGRES_USER: radiocalico_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - radiocalico-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http = require('http'); const options = { host: 'localhost', port: 3000, path: '/health', timeout: 2000 }; const req = http.request(options, (res) => process.exit(res.statusCode === 200 ? 0 : 1)); req.on('error', () => process.exit(1)); req.end();"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx Web Server
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: nginx-stage
+    container_name: radiocalico-nginx
+    ports:
+      - "80:80"
+      - "443:443"  # For future SSL setup
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - radiocalico-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      # Optional: Mount custom nginx config and SSL certificates
+      # - ./nginx/ssl:/etc/nginx/ssl:ro
+      # - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+
+  # Optional: Database migration service (run once)
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: app-stage
+    container_name: radiocalico-migration
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: radiocalico
+      POSTGRES_USER: radiocalico_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      SQLITE_DB_PATH: /app/data/database.db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - radiocalico-network
+    command: ["node", "database/migrate.js"]
+    restart: "no"
+    volumes:
+      # Mount existing SQLite database if migrating
+      - ./database.db:/app/data/database.db:ro
+
+networks:
+  radiocalico-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  nginx_logs:
+    driver: local
