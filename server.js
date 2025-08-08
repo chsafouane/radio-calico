@@ -8,7 +8,9 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-const dbPath = path.join(__dirname, 'database.db');
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, 'data', 'database.db')
+  : path.join(__dirname, 'database.db');
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {

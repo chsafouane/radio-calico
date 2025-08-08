@@ -1,0 +1,32 @@
+# Development Dockerfile for RadioCalico
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install development dependencies
+RUN apk add --no-cache git
+
+# Copy package files and install all dependencies (including dev)
+COPY package*.json ./
+RUN npm install
+
+# Copy all application files for development
+COPY . .
+
+# Create database directory
+RUN mkdir -p /app/data
+
+# Expose port and debug port
+EXPOSE 3000 9229
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "const http = require('http'); \
+    const options = { host: 'localhost', port: 3000, timeout: 2000 }; \
+    const req = http.request(options, (res) => process.exit(res.statusCode === 200 ? 0 : 1)); \
+    req.on('error', () => process.exit(1)); \
+    req.end();"
+
+# Start the application with nodemon for development
+CMD ["npm", "run", "dev"]
