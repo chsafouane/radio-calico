@@ -200,8 +200,8 @@ function updateTrackDisplay(data) {
         albumInfo.textContent = '-';
         
         // Reset quality to default values when no data
-        sourceQuality.textContent = '16-bit 44.1kHz';
-        streamQuality.textContent = '48kHz FLAC / HLS Lossless';
+        if (sourceQuality) sourceQuality.textContent = '16-bit 44.1kHz';
+        if (streamQuality) streamQuality.textContent = '48kHz FLAC / HLS Lossless';
         
         albumArt.style.display = 'none';
         albumArtPlaceholder.style.display = 'block';
@@ -221,8 +221,8 @@ function updateTrackDisplay(data) {
     albumInfo.textContent = data.album || 'Unknown Album';
 
     // Update quality information from metadata or use defaults
-    sourceQuality.textContent = data.source_quality || data.sourceQuality || '16-bit 44.1kHz';
-    streamQuality.textContent = data.stream_quality || data.streamQuality || '48kHz FLAC / HLS Lossless';
+    if (sourceQuality) sourceQuality.textContent = data.source_quality || data.sourceQuality || '16-bit 44.1kHz';
+    if (streamQuality) streamQuality.textContent = data.stream_quality || data.streamQuality || '48kHz FLAC / HLS Lossless';
 
     // Generate song ID and load ratings
     const newSongId = generateSongId(data.title || 'Unknown Track', data.artist || 'Unknown Artist');
