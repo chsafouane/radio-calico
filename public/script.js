@@ -263,9 +263,15 @@ function loadAlbumArt() {
     // Optimized album art loading with better caching strategy
     const img = new Image();
     
+    // Set a timeout to prevent hanging on slow loads
+    const timeout = setTimeout(() => {
+        showPlaceholder();
+    }, 5000);
+    
     // Use ETag-based caching by removing timestamp parameter
     // Let the browser handle caching based on server headers
     img.onload = function() {
+        clearTimeout(timeout);
         // Only update if the image actually loaded
         if (this.naturalWidth > 0 && this.naturalHeight > 0) {
             albumArt.src = albumArtUrl;
@@ -277,23 +283,8 @@ function loadAlbumArt() {
     };
     
     img.onerror = function() {
-        showPlaceholder();
-    };
-    
-    // Set a timeout to prevent hanging on slow loads
-    const timeout = setTimeout(() => {
-        showPlaceholder();
-    }, 5000);
-    
-    img.onload = function() {
         clearTimeout(timeout);
-        if (this.naturalWidth > 0 && this.naturalHeight > 0) {
-            albumArt.src = albumArtUrl;
-            albumArt.style.display = 'block';
-            albumArtPlaceholder.style.display = 'none';
-        } else {
-            showPlaceholder();
-        }
+        showPlaceholder();
     };
     
     img.src = albumArtUrl;
