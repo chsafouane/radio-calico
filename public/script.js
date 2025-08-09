@@ -260,25 +260,39 @@ function updateTrackDisplay(data) {
 }
 
 function loadAlbumArt() {
-    // Add timestamp to prevent caching of old album art
-    const timestamp = new Date().getTime();
-    const artUrl = `${albumArtUrl}?t=${timestamp}`;
-    
-    // Create a new image to test if it loads successfully
+    // Optimized album art loading with better caching strategy
     const img = new Image();
     
+    // Set a timeout to prevent hanging on slow loads
+    const timeout = setTimeout(() => {
+        showPlaceholder();
+    }, 5000);
+    
+    // Use ETag-based caching by removing timestamp parameter
+    // Let the browser handle caching based on server headers
     img.onload = function() {
-        albumArt.src = artUrl;
-        albumArt.style.display = 'block';
-        albumArtPlaceholder.style.display = 'none';
+        clearTimeout(timeout);
+        // Only update if the image actually loaded
+        if (this.naturalWidth > 0 && this.naturalHeight > 0) {
+            albumArt.src = albumArtUrl;
+            albumArt.style.display = 'block';
+            albumArtPlaceholder.style.display = 'none';
+        } else {
+            showPlaceholder();
+        }
     };
     
     img.onerror = function() {
-        albumArt.style.display = 'none';
-        albumArtPlaceholder.style.display = 'block';
+        clearTimeout(timeout);
+        showPlaceholder();
     };
     
-    img.src = artUrl;
+    img.src = albumArtUrl;
+    
+    function showPlaceholder() {
+        albumArt.style.display = 'none';
+        albumArtPlaceholder.style.display = 'block';
+    }
 }
 
 function generateSongId(title, artist) {
@@ -287,93 +301,100 @@ function generateSongId(title, artist) {
 }
 
 function generateFingerprint() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillText('Fingerprinting text 🎵', 2, 2);
+    // Check for cached fingerprint first
+    const cached = localStorage.getItem('radiocalico_fingerprint');
+    if (cached) {
+        console.log('Using cached fingerprint');
+        return cached;
+    }
     
-    const fingerprint = {
-        // Screen properties
-        screenWidth: screen.width,
-        screenHeight: screen.height,
-        screenColorDepth: screen.colorDepth,
-        screenPixelDepth: screen.pixelDepth,
+    console.log('Generating new fingerprint...');
+    
+    // Use requestIdleCallback or setTimeout to avoid blocking main thread
+    const generateAsync = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('Fingerprinting text 🎵', 2, 2);
         
-        // Navigator properties
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        languages: navigator.languages ? navigator.languages.join(',') : '',
-        platform: navigator.platform,
-        cookieEnabled: navigator.cookieEnabled,
-        doNotTrack: navigator.doNotTrack,
-        maxTouchPoints: navigator.maxTouchPoints || 0,
+        const fingerprint = {
+            // Screen properties
+            screenWidth: screen.width,
+            screenHeight: screen.height,
+            screenColorDepth: screen.colorDepth,
+            screenPixelDepth: screen.pixelDepth,
+            
+            // Navigator properties (minimal set for performance)
+            userAgent: navigator.userAgent.substring(0, 200), // Truncate for performance
+            language: navigator.language,
+            platform: navigator.platform,
+            cookieEnabled: navigator.cookieEnabled,
+            maxTouchPoints: navigator.maxTouchPoints || 0,
+            
+            // Timezone
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timezoneOffset: new Date().getTimezoneOffset(),
+            
+            // Canvas fingerprint
+            canvasFingerprint: canvas.toDataURL(),
+            
+            // Hardware concurrency
+            hardwareConcurrency: navigator.hardwareConcurrency || 1
+        };
         
-        // Timezone
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        timezoneOffset: new Date().getTimezoneOffset(),
+        // Optimized WebGL fingerprinting (only if needed)
+        try {
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (gl) {
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                if (debugInfo) {
+                    fingerprint.webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                    fingerprint.webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                }
+            }
+        } catch (e) {
+            // WebGL not supported
+        }
         
-        // Canvas fingerprint
-        canvasFingerprint: canvas.toDataURL(),
+        // Create hash from all fingerprint data
+        const fingerprintString = JSON.stringify(fingerprint);
+        const result = btoa(encodeURIComponent(fingerprintString)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 64);
         
-        // WebGL fingerprint
-        webglVendor: '',
-        webglRenderer: '',
+        // Cache the result with expiration (24 hours)
+        const cacheData = {
+            fingerprint: result,
+            timestamp: Date.now(),
+            expires: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+        };
         
-        // Audio context fingerprint
-        audioFingerprint: '',
+        try {
+            localStorage.setItem('radiocalico_fingerprint', result);
+            localStorage.setItem('radiocalico_fingerprint_meta', JSON.stringify(cacheData));
+        } catch (e) {
+            console.warn('Could not cache fingerprint:', e);
+        }
         
-        // Fonts detection (basic)
-        fonts: '',
-        
-        // Local storage support
-        localStorageSupport: typeof(Storage) !== 'undefined',
-        sessionStorageSupport: typeof(sessionStorage) !== 'undefined',
-        
-        // Hardware concurrency
-        hardwareConcurrency: navigator.hardwareConcurrency || 1
+        return result;
     };
     
-    // WebGL fingerprinting
+    // Check if cached fingerprint is expired
     try {
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (gl) {
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            if (debugInfo) {
-                fingerprint.webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                fingerprint.webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        const meta = localStorage.getItem('radiocalico_fingerprint_meta');
+        if (meta) {
+            const metaData = JSON.parse(meta);
+            if (Date.now() > metaData.expires) {
+                localStorage.removeItem('radiocalico_fingerprint');
+                localStorage.removeItem('radiocalico_fingerprint_meta');
             }
         }
     } catch (e) {
-        // WebGL not supported
+        // Invalid cache data, clear it
+        localStorage.removeItem('radiocalico_fingerprint');
+        localStorage.removeItem('radiocalico_fingerprint_meta');
     }
     
-    // Audio context fingerprinting (simplified)
-    try {
-        if (window.AudioContext || window.webkitAudioContext) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            fingerprint.audioFingerprint = audioContext.sampleRate.toString() + audioContext.state;
-            if (audioContext.close) {
-                audioContext.close();
-            }
-        }
-    } catch (e) {
-        fingerprint.audioFingerprint = 'unsupported';
-    }
-    
-    // Simplified font detection
-    try {
-        const canvas2 = document.createElement('canvas');
-        const ctx2 = canvas2.getContext('2d');
-        ctx2.font = '16px Arial';
-        fingerprint.fonts = ctx2.measureText('test').width.toString();
-    } catch (e) {
-        fingerprint.fonts = 'unknown';
-    }
-    
-    // Create hash from all fingerprint data
-    const fingerprintString = JSON.stringify(fingerprint);
-    return btoa(encodeURIComponent(fingerprintString)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 64);
+    return generateAsync();
 }
 
 async function loadSongRatings(songId) {

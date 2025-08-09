@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadioCalico - Live Stream</title>
+    
+    <!-- Resource hints for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://d3d4yli4hf5bmh.cloudfront.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <!-- Optimized font loading with fallback display -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -21,7 +27,7 @@
         <div class="now-playing-section">
             <div class="album-art-container">
                 <div class="album-art-large">
-                    <img id="albumArt" src="" alt="Album Art" style="display: none;">
+                    <img id="albumArt" src="" alt="Album Art" loading="lazy" style="display: none;">
                     <div class="album-art-placeholder">♪</div>
                 </div>
             </div>
@@ -92,7 +98,7 @@
     
     <div class="rating-status" id="ratingStatus" style="display: none;">Loading ratings...</div>
     
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js" integrity="sha256-zq6+YLMlrCuFGdMAClwz3jF1vdUJqIUjCCIqLGJn5WM=" crossorigin="anonymous"></script>
     <script src="script.js"></script>
 </body>
 </html>
